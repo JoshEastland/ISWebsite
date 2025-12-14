@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Player: Who Am I?</title>
+    
+    <style>
+        /* Basic Reset and Font */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+        }
+
+        /* Navbar Styling (copied from your main site for consistency) */
+        .navbar {
+            background-color: #007bff;
+            padding: 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 15px;
+            margin: 0 5px;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+        }
+        .navbar a:hover {
+            background-color: #0056b3;
+        }
+
+        /* Game Specific Styles */
+        #game-container {
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 20px 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #e51937; /* Red accent */
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        #hint-box {
+            background-color: #fff9e6; /* Light yellow background for hints */
+            border: 1px solid #ffcc00;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+            border-radius: 6px;
+        }
+        
+        #hint-box h3 {
+            color: #007bff; /* Blue for the hint header */
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        /* Styling for the list of cumulative hints */
+        #hint-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 0;
+        }
+        #hint-list li {
+            margin-bottom: 5px;
+            font-size: 1.05em;
+        }
+
+        /* Input and Button */
+        #input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #guess-input {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+        
+        #submit-guess {
+            background-color: #007bff;
+            color: white;
+            width: 80%;
+        }
+        #submit-guess:hover {
+            background-color: #0056b3;
+        }
+        
+        #next-hint-button {
+            background-color: #6aaa64; /* Green */
+            color: white;
+            display: none;
+            margin-top: 15px;
+        }
+        #next-hint-button:hover {
+            background-color: #4f8b4d;
+        }
+
+        #message {
+            margin-top: 15px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        
+        #restart-button {
+            margin-top: 20px;
+            background-color: #e51937; /* Red accent */
+            color: white;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <a href="../index.html">Home</a> 
+        <a href="resume.html">Resume</a>
+        <a href="aboutme.html">About Me</a>
+        <a href="sports.html">Sports</a>
+        <a href="#">Play A Game</a>
+    </div>
+
+    <div id="game-container">
+        <h1>🏈 Who Am I? (NFL Player Guess - 2025/2026)</h1>
+        <p>Type the player's full name. The hints will accumulate as you play.</p>
+        
+        <div id="hint-box">
+            <h3>Current Hints</h3>
+            <ul id="hint-list">
+                </ul>
+        </div>
+
+        <div id="input-container">
+            <input type="text" id="guess-input" placeholder="Enter Full Name (e.g., Patrick Mahomes)">
+            <button id="submit-guess">Submit Guess</button>
+            <button id="next-hint-button">Get Next Hint</button>
+        </div>
+
+        <div id="message"></div>
+        <button id="restart-button" onclick="initGame()">Play Again</button>
+    </div>
+
+    <script>
+        // Data updated for the 2025-2026 NFL season, incorporating recent trades and contract news.
+        const PLAYERS = [
+            {
+                name: "Patrick Mahomes",
+                hints: [
+                    "I am a three-time Super Bowl champion quarterback.",
+                    "I play for the Kansas City Chiefs.",
+                    "I have won multiple league MVP and Super Bowl MVP awards.",
+                    "I am known for my unique throwing style, including side-arm and no-look passes."
+                ]
+            },
+            {
+                name: "Lamar Jackson",
+                hints: [
+                    "I am the only quarterback in NFL history to rush for over 1,000 yards multiple times.",
+                    "I play for the Baltimore Ravens.",
+                    "I won my second league MVP award in 2023.",
+                    "I am known for my elite speed and shiftiness."
+                ]
+            },
+            {
+                name: "Josh Allen",
+                hints: [
+                    "I am a quarterback known for my incredible arm strength and high-volume play.",
+                    "I play for the Buffalo Bills.",
+                    "I was the league MVP in the 2024 season.",
+                    "I led the Bills to the AFC Championship in 2024."
+                ]
+            },
+            {
+                name: "Justin Jefferson",
+                hints: [
+                    "I hold the NFL record for most receiving yards by a player through their first four seasons.",
+                    "I play for the Minnesota Vikings.",
+                    "I am known for my signature touchdown celebration, 'The Griddy'.",
+                    "I signed a massive contract extension in 2024, making me the highest-paid non-QB."
+                ]
+            },
+            {
+                name: "T.J. Watt",
+                hints: [
+                    "I tied the single-season NFL sack record in 2021 (22.5).",
+                    "I play for the Pittsburgh Steelers.",
+                    "I led the league in forced fumbles in the 2024 season.",
+                    "I am one of the few players with multiple 15-sack seasons."
+                ]
+            },
+            {
+                name: "Myles Garrett",
+                hints: [
+                    "I was the first overall pick in the 2017 NFL Draft.",
+                    "I am a defensive end known for my elite athleticism and strength.",
+                    "I play for the Cleveland Browns.",
+                    "I won the Defensive Player of the Year award in 2023."
+                ]
+            },
+            {
+                name: "Nick Bosa",
+                hints: [
+                    "I was drafted second overall in 2019.",
+                    "I play for the San Francisco 49ers.",
+                    "I won the Defensive Player of the Year award in 2022.",
+                    "My older brother, Joey, also plays defensive end in the NFL."
+                ]
+            },
+            {
+                name: "Christian McCaffrey",
+                hints: [
+                    "I was the NFL's Offensive Player of the Year in 2023.",
+                    "I led the league in rushing yards in 2023.",
+                    "I am one of three players to record 1,000 rushing and 1,000 receiving yards in a single season.",
+                    "I play for the San Francisco 49ers."
+                ]
+            },
+            {
+                name: "Ja'Marr Chase",
+                hints: [
+                    "I claimed the NFL’s receiving triple crown (catches, yards, touchdowns) in the 2024 season.",
+                    "I play for the Cincinnati Bengals.",
+                    "I was the 2021 Offensive Rookie of the Year.",
+                    "I reunited with my college quarterback (Joe Burrow) in the NFL."
+                ]
+            },
+            {
+                name: "Travis Kelce",
+                hints: [
+                    "I hold the NFL record for the most 1,000-yard receiving seasons by a tight end (8 seasons).",
+                    "I play for the Kansas City Chiefs.",
+                    "I have won three Super Bowls with the Chiefs.",
+                    "I am often referred to as the most clutch receiver in NFL playoff history."
+                ]
+            },
+            {
+                name: "CeeDee Lamb",
+                hints: [
+                    "I led the NFL in receptions (135) in 2023.",
+                    "I was a First-Team All-Pro selection in 2023.",
+                    "I play wide receiver for the Dallas Cowboys.",
+                    "I am known for wearing the number 88, following a legendary line of Cowboys receivers."
+                ]
+            },
+            {
+                name: "Sauce Gardner",
+                hints: [
+                    "I was drafted 4th overall in the 2022 NFL Draft.",
+                    "I have been named a First-Team All-Pro cornerback in both of my first two seasons.",
+                    "I play for the New York Jets.",
+                    "I was the Defensive Rookie of the Year in 2022."
+                ]
+            },
+            {
+                name: "Penei Sewell",
+                hints: [
+                    "I was drafted 7th overall in 2021.",
+                    "I am one half of one of the league's top tackle duos (with Taylor Decker).",
+                    "I play offensive tackle for the Detroit Lions.",
+                    "I became the highest-paid offensive lineman in NFL history with my 2024 extension."
+                ]
+            },
+            {
+                name: "Micah Parsons",
+                hints: [
+                    "I was the Defensive Rookie of the Year in 2021.",
+                    "I am a highly versatile defender who lines up at linebacker and defensive end.",
+                    "I play for the Dallas Cowboys.",
+                    "I have recorded over 12 sacks in each of my first three seasons."
+                ]
+            },
+            {
+                name: "Amon-Ra St. Brown",
+                hints: [
+                    "I was a fourth-round pick in the 2021 NFL Draft.",
+                    "I am a star wide receiver known for my work ethic and toughness.",
+                    "I play for the Detroit Lions.",
+                    "I was named a First-Team All-Pro in 2023."
+                ]
+            },
+            {
+                name: "Derek Stingley Jr.",
+                hints: [
+                    "I was drafted 3rd overall in the 2022 NFL Draft.",
+                    "I am a cornerback who was named a First-Team All-Pro in the 2024 season.",
+                    "I play for the Houston Texans.",
+                    "I was the only player in 2024 with at least 5 interceptions and 15 passes defended."
+                ]
+            },
+            {
+                name: "Puka Nacua",
+                hints: [
+                    "I was drafted in the 5th round of the 2023 NFL Draft.",
+                    "I broke the all-time NFL rookie records for receptions and receiving yards.",
+                    "I play wide receiver for the Los Angeles Rams.",
+                    "I led my team in targets during the 2024 season."
+                ]
+            },
+            {
+                name: "Brock Purdy",
+                hints: [
+                    "I was the last pick (Mr. Irrelevant) of the 2022 NFL Draft.",
+                    "I quickly took over as the starting quarterback for my team.",
+                    "I led my team to the Super Bowl in 2024.",
+                    "I play for the San Francisco 49ers."
+                ]
+            },
+            {
+                name: "Sam LaPorta",
+                hints: [
+                    "I broke the NFL rookie record for receptions by a tight end (86) in 2023.",
+                    "I play for the Detroit Lions.",
+                    "I was named to the Pro Bowl in my rookie season.",
+                    "I hold the team record for receiving touchdowns by a tight end (10) in a single season."
+                ]
+            },
+            {
+                name: "Jalen Hurts",
+                hints: [
+                    "I was a Super Bowl MVP contender in 2022.",
+                    "I play quarterback for the Philadelphia Eagles.",
+                    "I threw for over 3,500 yards and rushed for over 600 in the 2023 season.",
+                    "I am known for my signature 'Tush Push' (Quarterback Sneak) success rate."
+                ]
+            },
+            {
+                name: "Pat Surtain II",
+                hints: [
+                    "I won Defensive Player of the Year in the 2024 season.",
+                    "I am a shutdown cornerback.",
+                    "I was the 9th overall pick in the 2021 NFL Draft.",
+                    "I play for the Denver Broncos."
+                ]
+            },
+            {
+                name: "Derrick Henry",
+                hints: [
+                    "I won the 2024 rushing touchdown title (16 TDs).",
+                    "I am a running back known as 'King Henry'.",
+                    "I played most of my career for the Tennessee Titans.",
+                    "I currently play for the Baltimore Ravens."
+                ]
+            },
+            {
+                name: "Chris Jones",
+                hints: [
+                    "I am a defensive tackle who held out at the start of the 2023 season.",
+                    "I was named a First-Team All-Pro in 2022 and 2023.",
+                    "I am a three-time Super Bowl champion.",
+                    "I re-signed with the Kansas City Chiefs in 2024 on a massive contract."
+                ]
+            },
+            {
+                name: "Jayden Daniels",
+                hints: [
+                    "I won the Heisman Trophy in 2023.",
+                    "I was drafted 2nd overall in the 2024 NFL Draft.",
+                    "I won the Offensive Rookie of the Year award in the 2024 season.",
+                    "I am the quarterback for the Washington Commanders."
+                ]
+            },
+            {
+                name: "Bijan Robinson",
+                hints: [
+                    "I was drafted 8th overall in the 2023 NFL Draft.",
+                    "I am a running back known for my versatility as a runner and receiver.",
+                    "I play for the Atlanta Falcons.",
+                    "I recorded over 1,800 scrimmage yards in the 2024 season."
+                ]
+            }
+        ];
+        
+        let secretPlayer = null;
+        let currentHintIndex = 0;
+
+        const hintListUL = document.getElementById('hint-list');
+        const guessInput = document.getElementById('guess-input');
+        const submitButton = document.getElementById('submit-guess');
+        const nextHintButton = document.getElementById('next-hint-button');
+        const messageDiv = document.getElementById('message');
+        const restartButton = document.getElementById('restart-button');
+
+        function initGame() {
+            // Select a random player
+            const randomIndex = Math.floor(Math.random() * PLAYERS.length);
+            secretPlayer = PLAYERS[randomIndex];
+            currentHintIndex = 0;
+            
+            // Reset UI
+            messageDiv.textContent = '';
+            guessInput.value = '';
+            guessInput.disabled = false;
+            submitButton.disabled = false;
+            nextHintButton.style.display = 'none';
+            restartButton.style.display = 'none';
+            hintListUL.innerHTML = ''; // Clear all previous hints
+
+            // Start the game by displaying the first hint
+            displayNextHint();
+        }
+        
+        function displayNextHint() {
+            const hintText = secretPlayer.hints[currentHintIndex];
+            const li = document.createElement('li');
+            li.textContent = hintText;
+            hintListUL.appendChild(li);
+        }
+
+        function checkGuess() {
+            // Normalize guess: remove extra spaces and convert to lowercase
+            const guess = guessInput.value.trim().toLowerCase().replace(/\s+/g, ' '); 
+            const correctName = secretPlayer.name.toLowerCase().replace(/\s+/g, ' ');
+
+            // Strict comparison
+            if (guess === correctName) {
+                messageDiv.textContent = `✅ Correct! The player is ${secretPlayer.name}. You won with ${currentHintIndex + 1} hints!`;
+                endGame(true);
+            } else {
+                messageDiv.textContent = `❌ Incorrect guess. Try again or get another hint!`;
+                nextHintButton.style.display = 'inline-block';
+                submitButton.disabled = true;
+            }
+        }
+        
+        function getNextHint() {
+            currentHintIndex++;
+
+            if (currentHintIndex < secretPlayer.hints.length) {
+                displayNextHint(); // Display the new hint
+                
+                submitButton.disabled = false; // Re-enable guess button
+                nextHintButton.style.display = 'none'; // Hide hint button
+                guessInput.value = ''; // Clear input for new guess
+                messageDiv.textContent = ''; // Clear message
+            } else {
+                messageDiv.textContent = `🚨 Game Over! You ran out of hints. The player was ${secretPlayer.name}.`;
+                endGame(false);
+            }
+        }
+
+        function endGame(isWin) {
+            submitButton.disabled = true;
+            guessInput.disabled = true;
+            nextHintButton.style.display = 'none';
+            restartButton.style.display = 'block';
+        }
+
+        // Event Listeners
+        submitButton.addEventListener('click', checkGuess);
+        nextHintButton.addEventListener('click', getNextHint);
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkGuess();
+            }
+        });
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+
+</body>
+</html>
